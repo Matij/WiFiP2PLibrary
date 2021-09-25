@@ -55,28 +55,28 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         }
     }
 
-    private var serviceDevices: ArrayList<WiFiGroupServiceDevice> = ArrayList()
+    var serviceDevices: ArrayList<WiFiGroupServiceDevice> = ArrayList()
 
-    private var dnsSdTxtRecordListener: WifiP2pManager.DnsSdTxtRecordListener? = null
-    private var dnsSdServiceResponseListener: WifiP2pManager.DnsSdServiceResponseListener? = null
-    private var serviceConnectedListener: ServiceConnectedListener? = null
+    var dnsSdTxtRecordListener: WifiP2pManager.DnsSdTxtRecordListener? = null
+    var dnsSdServiceResponseListener: WifiP2pManager.DnsSdServiceResponseListener? = null
+    var serviceConnectedListener: ServiceConnectedListener? = null
     /**
      * Listener to know when data is received from the service device or other client devices
      * connected to the same group.
      */
-    private var dataReceivedListener: DataReceivedListener? = null
+    var dataReceivedListener: DataReceivedListener? = null
     /**
      * Listener to notify when the service device has been disconnected.
      */
-    private var serviceDisconnectedListener: ServiceDisconnectedListener? = null
+    var serviceDisconnectedListener: ServiceDisconnectedListener? = null
     /**
      * Listener to know when a new client is registered in the actual group.
      */
-    private var clientConnectedListener: ClientConnectedListener? = null
+    var clientConnectedListener: ClientConnectedListener? = null
     /**
      * Listener to know when a client has been disconnected from the group.
      */
-    private var clientDisconnectedListener: ClientDisconnectedListener? = null
+    var clientDisconnectedListener: ClientDisconnectedListener? = null
 
     private var serverSocket: ServerSocket? = null
 
@@ -192,6 +192,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         }
     }
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     override fun onServerDisconnectedListener() {
         // If the server is disconnected the client is cleared
         disconnect()
@@ -270,6 +271,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
      * Disconnect from the actual group connected. Before the disconnection, the client sends a
      * message to the service device to notify the disconnection.
      */
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     fun disconnect() {
         serverSocket?.let { nonNullServerSocket ->
             try {

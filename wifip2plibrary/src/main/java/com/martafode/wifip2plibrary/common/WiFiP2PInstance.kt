@@ -20,7 +20,7 @@ class WiFiP2PInstance private constructor(context: Context) : ConnectionInfoList
 
     var wifiP2pManager = context.getSystemService(Context.WIFI_P2P_SERVICE) as? WifiP2pManager?
     var channel = wifiP2pManager?.initialize(context, context.mainLooper, null)
-    private var broadcastReceiver = WiFiDirectBroadcastReceiver(this)
+    var broadcastReceiver = WiFiDirectBroadcastReceiver(this)
 
     var thisDevice: WiFiGroupDevice? = null
 

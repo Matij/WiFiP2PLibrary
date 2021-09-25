@@ -47,27 +47,6 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
         private var instance: WiFiGroupService? = null
 
         /**
-         * Listener to know when data is received from the client devices connected to the group.
-         *
-         */
-        var dataReceivedListener: DataReceivedListener? = null
-        /**
-         * Listener to know when a new client is registered in the group.
-         *
-         */
-        var clientConnectedListener: ClientConnectedListener? = null
-        /**
-         * Listener to know when a client has been disconnected from the group.
-         *
-         */
-        var clientDisconnectedListener: ClientDisconnectedListener? = null
-
-        var clientsConnected: HashMap<String, WiFiGroupDevice> = HashMap()
-
-        private var serverSocket: ServerSocket? = null
-        private var groupAlreadyCreated: Boolean = false
-
-        /**
          * Return the <code>WiFiGroupService</code> instance. If the instance doesn't exist yet, it's
          * created and returned.
          *
@@ -81,6 +60,26 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
             return instance!!
         }
     }
+    /**
+     * Listener to know when data is received from the client devices connected to the group.
+     *
+     */
+    var dataReceivedListener: DataReceivedListener? = null
+    /**
+     * Listener to know when a new client is registered in the group.
+     *
+     */
+    var clientConnectedListener: ClientConnectedListener? = null
+    /**
+     * Listener to know when a client has been disconnected from the group.
+     *
+     */
+    var clientDisconnectedListener: ClientDisconnectedListener? = null
+
+    var clientsConnected: HashMap<String, WiFiGroupDevice> = HashMap()
+
+    private var serverSocket: ServerSocket? = null
+    private var groupAlreadyCreated: Boolean = false
 
     private var wiFiP2PInstance: WiFiP2PInstance = WiFiP2PInstance.getInstance(context = context).apply {
         peerConnectedListener = this@WiFiGroupService
