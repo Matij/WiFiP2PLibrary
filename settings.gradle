@@ -1,0 +1,3 @@
+rootProject.name = "WifiP2pLib"
+
+include ':wifip2plibrary'
