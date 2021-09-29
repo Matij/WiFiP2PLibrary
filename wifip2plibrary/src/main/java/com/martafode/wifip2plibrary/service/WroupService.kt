@@ -81,8 +81,10 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
     private var serverSocket: ServerSocket? = null
     private var groupAlreadyCreated: Boolean = false
 
-    private var wiFiP2PInstance: WiFiP2PInstance = WiFiP2PInstance.getInstance(context = context).apply {
-        peerConnectedListener = this@WiFiGroupService
+    private var wiFiP2PInstance: WiFiP2PInstance = WiFiP2PInstance.getInstance(context = context)
+
+    init {
+        wiFiP2PInstance.peerConnectedListener = this
     }
 
     private val scope: CoroutineScope = ProcessLifecycleOwner.get().lifecycle.coroutineScope
