@@ -15,7 +15,14 @@ class WiFiP2PInstance private constructor(context: Context) : ConnectionInfoList
     companion object {
         const val TAG: String = "WiFiP2PInstance"
 
-        fun getInstance(context: Context) = WiFiP2PInstance(context = context)
+        private var instance: WiFiP2PInstance ? = null
+
+        fun getInstance(context: Context): WiFiP2PInstance {
+            if (instance == null) {
+                return WiFiP2PInstance(context = context)
+            }
+            return instance!!
+        }
     }
 
     var wifiP2pManager = context.getSystemService(Context.WIFI_P2P_SERVICE) as? WifiP2pManager?
