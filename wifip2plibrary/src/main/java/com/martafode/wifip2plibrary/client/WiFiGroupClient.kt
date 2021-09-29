@@ -206,7 +206,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
      * @param message The message to be sent.
      */
     fun sendMessageToServer(message: MessageWrapper) {
-
+        sendMessage(serviceDevice, message)
     }
 
     /**
@@ -452,16 +452,19 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
     }
 
     private fun sendServerRegistrationMessage() {
-        val content = RegistrationMessageContent(wiFiP2PInstance.thisDevice!!)
+        val thisDevice = wiFiP2PInstance.thisDevice
+        if (thisDevice != null) {
+            val content = RegistrationMessageContent(thisDevice)
 
-        val gson = Gson()
+            val gson = Gson()
 
-        val negotiationMessage = MessageWrapper(
-            message = gson.toJson(content),
-            messageType = MessageWrapper.MessageType.CONNECTION_MESSAGE
-        )
+            val negotiationMessage = MessageWrapper(
+                message = gson.toJson(content),
+                messageType = MessageWrapper.MessageType.CONNECTION_MESSAGE
+            )
 
-        sendMessageToServer(negotiationMessage)
+            sendMessageToServer(negotiationMessage)
+        }
     }
 
     private fun sendDisconnectionMessage() {
