@@ -19,7 +19,7 @@ class WiFiP2PInstance private constructor(context: Context) : ConnectionInfoList
 
         fun getInstance(context: Context): WiFiP2PInstance {
             if (instance == null) {
-                return WiFiP2PInstance(context = context)
+                instance = WiFiP2PInstance(context = context)
             }
             return instance!!
         }
