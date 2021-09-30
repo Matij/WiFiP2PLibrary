@@ -55,11 +55,11 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         }
     }
 
-    var serviceDevices: ArrayList<WiFiGroupServiceDevice> = ArrayList()
+    private var serviceDevices: ArrayList<WiFiGroupServiceDevice> = ArrayList()
 
-    var dnsSdTxtRecordListener: WifiP2pManager.DnsSdTxtRecordListener? = null
-    var dnsSdServiceResponseListener: WifiP2pManager.DnsSdServiceResponseListener? = null
-    var serviceConnectedListener: ServiceConnectedListener? = null
+    private var dnsSdTxtRecordListener: WifiP2pManager.DnsSdTxtRecordListener? = null
+    private var dnsSdServiceResponseListener: WifiP2pManager.DnsSdServiceResponseListener? = null
+    private var serviceConnectedListener: ServiceConnectedListener? = null
     /**
      * Listener to know when data is received from the service device or other client devices
      * connected to the same group.
@@ -83,8 +83,9 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
     private var wiFiP2PInstance: WiFiP2PInstance = WiFiP2PInstance.getInstance(context)
 
     private var serviceDevice: WiFiGroupServiceDevice? = null
-    private var clientsConnected: HashMap<String, WiFiGroupDevice> = HashMap()
     private var isRegistered: Boolean = false
+
+    var clientsConnected: HashMap<String, WiFiGroupDevice> = HashMap()
 
     init {
         wiFiP2PInstance.peerConnectedListener = this
@@ -468,15 +469,18 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
     }
 
     private fun sendDisconnectionMessage() {
-        val content = DisconnectionMessageContent(wiFiP2PInstance.thisDevice!!)
+        val thisDevice = wiFiP2PInstance.thisDevice
+        if (thisDevice != null) {
+            val content = DisconnectionMessageContent(thisDevice)
 
-        val gson = Gson()
+            val gson = Gson()
 
-        val disconnectionMessage = MessageWrapper(
-            message = gson.toJson(content),
-            messageType = MessageWrapper.MessageType.DISCONNECTION_MESSAGE
-        )
+            val disconnectionMessage = MessageWrapper(
+                message = gson.toJson(content),
+                messageType = MessageWrapper.MessageType.DISCONNECTION_MESSAGE
+            )
 
-        sendMessageToServer(disconnectionMessage)
+            sendMessageToServer(disconnectionMessage)
+        }
     }
 }
