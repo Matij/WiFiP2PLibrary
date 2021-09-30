@@ -261,7 +261,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                             outputStream.close()
                         }
                     } catch (e: IOException) {
-
+                        Log.e(TAG, "Error creating client socket: " + e.message)
                     }
                 }
             }
@@ -322,12 +322,13 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
     private fun getTxtRecordListener(serviceDiscoveredListener: ServiceDiscoveredListener): WifiP2pManager.DnsSdTxtRecordListener {
         return WifiP2pManager.DnsSdTxtRecordListener { fullDomainName, txtRecordMap, device ->
             if (txtRecordMap.containsKey(WiFiGroupService.SERVICE_NAME_PROPERTY) &&
-                txtRecordMap.containsKey(WiFiGroupService.SERVICE_PORT_PROPERTY) &&
                 txtRecordMap[WiFiGroupService.SERVICE_NAME_PROPERTY]
                     .equals(WiFiGroupService.SERVICE_NAME_VALUE, ignoreCase = true)) {
 
                 val servicePort = Integer.valueOf(txtRecordMap[WiFiGroupService.SERVICE_PORT_PROPERTY]!!)
                 val serviceDevice = WiFiGroupServiceDevice(device, txtRecordMap)
+                serviceDevice.deviceServerSocketPort = servicePort
+                serviceDevice.txtRecordMap = txtRecordMap
 
                 if (serviceDevices.contains(serviceDevice).not()) {
                     Log.i(TAG, "Found a new WiFiGroup service: ")
