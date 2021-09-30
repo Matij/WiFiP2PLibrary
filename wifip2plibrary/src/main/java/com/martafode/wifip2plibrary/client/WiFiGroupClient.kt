@@ -33,6 +33,7 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.charset.Charset
 import java.util.ArrayList
 
 class WiFiGroupClient private constructor(context: Context): PeerConnectedListener, ServiceDisconnectedListener {
@@ -85,6 +86,11 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
     private var serviceDevice: WiFiGroupServiceDevice? = null
     private var isRegistered: Boolean = false
 
+    /**
+     * Get/Set the devices connected to the actual group.
+     *
+     * @return the devices connected to the actual group.
+     */
     var clientsConnected: HashMap<String, WiFiGroupDevice> = HashMap()
 
     init {
@@ -298,13 +304,6 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         }, 2000)
     }
 
-    /**
-     * Obtain the devices connected to the actual group.
-     *
-     * @return the devices connected to the actual group.
-     */
-    fun getClientsConnected() = clientsConnected.values
-
     fun setupDnsListeners(wiFiP2PInstance: WiFiP2PInstance, serviceDiscoveredListener: ServiceDiscoveredListener) {
         if (dnsSdTxtRecordListener == null || dnsSdServiceResponseListener == null) {
             dnsSdTxtRecordListener = getTxtRecordListener(serviceDiscoveredListener)
@@ -350,14 +349,14 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
     }
 
     private fun createServerSocket() {
-        serverSocket?.let { nonNullServerSocket ->
+        if (serverSocket == null) {
             scope.executeAsyncTask(
                 params = emptyArray<Unit>(),
                 doInBackground = {
                     try {
                         serverSocket = ServerSocket(0)
 
-                        val port = nonNullServerSocket.localPort
+                        val port = serverSocket!!.localPort
                         wiFiP2PInstance.thisDevice?.deviceServerSocketPort = port
 
                         Log.i(TAG, "Client ServerSocket created. Accepting requests...")
@@ -365,7 +364,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
 
                         while (true) {
                             val socket = serverSocket!!.accept()
-                            val dataReceived = IOUtils.toString(socket.getInputStream())
+                            val dataReceived = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
                             Log.i(TAG, "Data received: $dataReceived")
                             Log.i(TAG, "From IP: " + socket.inetAddress.hostAddress)
                             val gson = Gson()
