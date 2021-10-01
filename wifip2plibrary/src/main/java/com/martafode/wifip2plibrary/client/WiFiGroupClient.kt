@@ -244,11 +244,11 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                     try {
                         val socket = Socket()
                         socket.bind(null)
-                        val hostAddres: InetSocketAddress = InetSocketAddress(
+                        val hostAddress = InetSocketAddress(
                             device.deviceServerSocketIP,
                             device.deviceServerSocketPort
                         )
-                        socket.connect(hostAddres, 2000)
+                        socket.connect(hostAddress, 2000)
                         val gson = Gson()
                         val messageJson = gson.toJson(params[0])
                         val outputStream = socket.getOutputStream()
@@ -257,17 +257,11 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                             0,
                             messageJson.toByteArray().size
                         )
-                        Log.d(
-                            TAG,
-                            "Sending data: " + params[0]
-                        )
+                        Log.d(TAG, "Sending data: " + params[0])
                         socket.close()
                         outputStream.close()
                     } catch (e: IOException) {
-                        Log.e(
-                            TAG,
-                            "Error creating client socket: " + e.message
-                        )
+                        Log.e(TAG, "Error creating client socket: " + e.message)
                     }
                 }
                 return null
@@ -406,9 +400,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                 if (clientsConnected.contains(device.deviceMac)) {
                     clientsConnected[device.deviceMac!!] = device
 
-                    if (clientConnectedListener != null) {
-                        clientConnectedListener!!.onClientConnected(device)
-                    }
+                    clientConnectedListener?.onClientConnected(device)
 
                     Log.d(TAG, "New client connected to the group:")
                     Log.d(TAG, "\tDevice name: " + device.deviceName)
@@ -428,9 +420,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                 val device: WiFiGroupDevice = disconnectionMessageContent.wifiGroupDevice
                 clientsConnected.remove(device.deviceMac)
 
-                if (clientDisconnectedListener != null) {
-                    clientDisconnectedListener!!.onClientDisconnected(device)
-                }
+                clientDisconnectedListener?.onClientDisconnected(device)
 
                 Log.d(TAG, "Client disconnected from the group:")
                 Log.d(TAG, "\tDevice name: " + device.deviceName)
