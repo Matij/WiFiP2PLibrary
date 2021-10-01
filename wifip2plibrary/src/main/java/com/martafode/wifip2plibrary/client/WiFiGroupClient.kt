@@ -11,8 +11,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.coroutineScope
 import com.google.gson.Gson
 import com.martafode.wifip2plibrary.common.*
 import com.martafode.wifip2plibrary.common.direct.WiFiDirectUtils
@@ -28,7 +26,6 @@ import com.martafode.wifip2plibrary.common.messages.MessageWrapper
 import com.martafode.wifip2plibrary.common.messages.RegisteredDevicesMessageContent
 import com.martafode.wifip2plibrary.common.messages.RegistrationMessageContent
 import com.martafode.wifip2plibrary.service.WiFiGroupService
-import kotlinx.coroutines.CoroutineScope
 import org.apache.commons.io.IOUtils
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -97,8 +94,6 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         wiFiP2PInstance.peerConnectedListener = this
         wiFiP2PInstance.serviceDisconnectedListener = this
     }
-
-//    private val scope: CoroutineScope = ProcessLifecycleOwner.get().lifecycle.coroutineScope
 
     /**
      * Start to discover WiFiGroup services registered in the current local network.
@@ -243,7 +238,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         // Set the actual device to the message
         message.wifiGroupDevice = wiFiP2PInstance.thisDevice
 
-        object : AsyncTask<MessageWrapper?, Void?, Void?>() {
+        class SendMessageAsyncTask : AsyncTask<MessageWrapper?, Void?, Void?>() {
             override fun doInBackground(vararg params: MessageWrapper?): Void? {
                 if (device?.deviceServerSocketIP != null) {
                     try {
@@ -277,7 +272,8 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                 }
                 return null
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, message)
+        }
+        SendMessageAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, message)
     }
 
     /**
@@ -355,7 +351,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
 
     private fun createServerSocket() {
         if (serverSocket == null) {
-            object : AsyncTask<Void?, Void?, Void?>() {
+            class CreateServerSocketAsyncTask : AsyncTask<Void?, Void?, Void?>() {
                 override fun doInBackground(vararg params: Void?): Void? {
                     try {
                         serverSocket = ServerSocket(0)
@@ -390,7 +386,9 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                     }
                     return null
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            }
+
+            CreateServerSocketAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
         }
     }
 

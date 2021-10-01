@@ -41,7 +41,7 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
         const val SERVICE_PORT_PROPERTY = "SERVICE_PORT"
         private const val SERVICE_PORT_VALUE = 9999
         const val SERVICE_NAME_PROPERTY = "SERVICE_NAME"
-        const val SERVICE_NAME_VALUE = "WiFiGROUP"
+        const val SERVICE_NAME_VALUE = "WROUP"
         private const val SERVICE_GROUP_NAME = "GROUP_NAME"
 
         private var instance: WiFiGroupService? = null
