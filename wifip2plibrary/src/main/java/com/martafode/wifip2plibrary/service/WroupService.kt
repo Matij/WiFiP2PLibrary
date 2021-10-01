@@ -28,6 +28,7 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.charset.Charset
 
 class WiFiGroupService private constructor(context: Context) : PeerConnectedListener {
     companion object {
@@ -245,7 +246,7 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
                         Log.i(TAG, "Server socket created. Accepting requests...")
                         while (true) {
                             val socket = serverSocket!!.accept()
-                            val dataReceived = IOUtils.toString(socket.getInputStream())
+                            val dataReceived = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
                             Log.i(TAG, "Data received: $dataReceived")
                             Log.i(TAG, "From IP: " + socket.inetAddress.hostAddress)
                             val gson = Gson()

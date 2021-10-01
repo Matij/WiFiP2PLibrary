@@ -31,6 +31,7 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.charset.Charset
 import java.util.ArrayList
 
 class WiFiGroupClient private constructor(context: Context): PeerConnectedListener, ServiceDisconnectedListener {
@@ -358,7 +359,7 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                         Log.i(TAG, "\tPort: $port")
                         while (true) {
                             val socket = serverSocket!!.accept()
-                            val dataReceived = IOUtils.toString(socket.getInputStream())
+                            val dataReceived = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
                             Log.i(
                                 TAG,
                                 "Data received: $dataReceived"
