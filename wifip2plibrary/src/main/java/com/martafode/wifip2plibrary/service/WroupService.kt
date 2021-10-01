@@ -5,16 +5,14 @@ import android.content.Context
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
+import android.os.AsyncTask
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.coroutineScope
 import com.google.gson.Gson
 import com.martafode.wifip2plibrary.common.WiFiP2PError
 import com.martafode.wifip2plibrary.common.WiFiP2PInstance
 import com.martafode.wifip2plibrary.common.WiFiGroupDevice
 import com.martafode.wifip2plibrary.common.direct.WiFiDirectUtils
-import com.martafode.wifip2plibrary.common.executeAsyncTask
 import com.martafode.wifip2plibrary.common.listeners.ClientConnectedListener
 import com.martafode.wifip2plibrary.common.listeners.ClientDisconnectedListener
 import com.martafode.wifip2plibrary.common.listeners.DataReceivedListener
@@ -24,14 +22,12 @@ import com.martafode.wifip2plibrary.common.messages.DisconnectionMessageContent
 import com.martafode.wifip2plibrary.common.messages.MessageWrapper
 import com.martafode.wifip2plibrary.common.messages.RegisteredDevicesMessageContent
 import com.martafode.wifip2plibrary.common.messages.RegistrationMessageContent
-import kotlinx.coroutines.CoroutineScope
 import org.apache.commons.io.IOUtils
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.nio.charset.Charset
 
 class WiFiGroupService private constructor(context: Context) : PeerConnectedListener {
     companion object {
@@ -86,8 +82,6 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
     init {
         wiFiP2PInstance.peerConnectedListener = this
     }
-
-    private val scope: CoroutineScope = ProcessLifecycleOwner.get().lifecycle.coroutineScope
 
     /**
      * Start a WiFiGroup service registration in the actual local network with the name indicated in
@@ -210,70 +204,62 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
         // Set the actual device to the message
         message.wifiGroupDevice = wiFiP2PInstance.thisDevice
 
-        scope.executeAsyncTask(
-            params = arrayOf(message),
-            onPreExecute = {},
-            doInBackground = { params ->
+        class SendMessageAsyncTask: AsyncTask<MessageWrapper?, Void?, Void?>() {
+            override fun doInBackground(vararg params: MessageWrapper?): Void? {
                 if (device?.deviceServerSocketIP != null) {
                     try {
                         val socket = Socket()
                         socket.bind(null)
-
-                        val hostAddress = InetSocketAddress(
+                        val hostAddres: InetSocketAddress = InetSocketAddress(
                             device.deviceServerSocketIP,
                             device.deviceServerSocketPort
                         )
-                        socket.connect(hostAddress, 2000)
-
-                        params?.let { messages ->
-                            val gson = Gson()
-                            val messageJson = gson.toJson(messages[0])
-
-                            val outputStream = socket.getOutputStream()
-                            outputStream.write(
-                                messageJson.toByteArray(),
-                                0,
-                                messageJson.toByteArray().size
-                            )
-
-                            Log.d(TAG, "Sending data: " + messages[0])
-
-                            socket.close()
-                            outputStream.close()
-                        }
+                        socket.connect(hostAddres, 2000)
+                        val gson = Gson()
+                        val messageJson = gson.toJson(params[0])
+                        val outputStream = socket.getOutputStream()
+                        outputStream.write(
+                            messageJson.toByteArray(),
+                            0,
+                            messageJson.toByteArray().size
+                        )
+                        Log.d(TAG, "Sending data: " + params[0])
+                        socket.close()
+                        outputStream.close()
                     } catch (e: IOException) {
                         Log.e(TAG, "Error creating client socket: " + e.message)
                     }
                 }
-            },
-            onPostExecute = {}
-        )
+                return null
+            }
+        }
+        SendMessageAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, message)
     }
 
     private fun createServerSocket() {
-        serverSocket?.let { notNullServerSocket ->
-            scope.executeAsyncTask(
-                params = arrayOf<Unit>(),
-                doInBackground = {
+        if (serverSocket == null) {
+            class CreateSocketAsyncTask : AsyncTask<Void?, Void?, Void?>() {
+                override fun doInBackground(vararg params: Void?): Void? {
                     try {
                         serverSocket = ServerSocket(SERVICE_PORT_VALUE)
                         Log.i(TAG, "Server socket created. Accepting requests...")
-
                         while (true) {
-                            val socket = notNullServerSocket.accept()
-                            val dataReceived = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
+                            val socket = serverSocket!!.accept()
+                            val dataReceived = IOUtils.toString(socket.getInputStream())
                             Log.i(TAG, "Data received: $dataReceived")
                             Log.i(TAG, "From IP: " + socket.inetAddress.hostAddress)
-
                             val gson = Gson()
-                            val messageWrapper = gson.fromJson(dataReceived, MessageWrapper::class.java)
+                            val messageWrapper =
+                                gson.fromJson(dataReceived, MessageWrapper::class.java)
                             onMessageReceived(messageWrapper, socket.inetAddress)
                         }
                     } catch (e: IOException) {
                         Log.e(TAG, "Error creating/closing server socket: " + e.message)
                     }
+                    return null
                 }
-            )
+            }
+            CreateSocketAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
         }
     }
 
