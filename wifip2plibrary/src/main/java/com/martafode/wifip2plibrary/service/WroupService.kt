@@ -246,7 +246,12 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
                         Log.i(TAG, "Server socket created. Accepting requests...")
                         while (true) {
                             val socket = serverSocket!!.accept()
-                            val dataReceived = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
+                            val dataReceived = try {
+                                IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
+                            } catch (e: NoSuchMethodError) {
+                                Log.e(TAG, "An error occurred on ${javaClass.canonicalName}#createServerSocket doInBackground: $e")
+                                null
+                            }
                             Log.i(TAG, "Data received: $dataReceived")
                             Log.i(TAG, "From IP: " + socket.inetAddress.hostAddress)
                             val gson = Gson()

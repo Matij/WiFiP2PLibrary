@@ -359,7 +359,12 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                         Log.i(TAG, "\tPort: $port")
                         while (true) {
                             val socket = serverSocket!!.accept()
-                            val dataReceived = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
+                            val dataReceived = try {
+                                IOUtils.toString(socket.getInputStream(), Charset.defaultCharset())
+                            } catch (e: NoSuchMethodError) {
+                                Log.e(TAG, "An error occurred on ${javaClass.canonicalName}#createServerSocket doInBackground: $e")
+                                null
+                            }
                             Log.i(
                                 TAG,
                                 "Data received: $dataReceived"
