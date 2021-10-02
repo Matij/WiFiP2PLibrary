@@ -24,6 +24,8 @@ import com.martafode.wifip2plibrary.common.messages.RegisteredDevicesMessageCont
 import com.martafode.wifip2plibrary.common.messages.RegistrationMessageContent
 import org.apache.commons.io.IOUtils
 import java.io.IOException
+import java.lang.Exception
+import java.lang.reflect.Method
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -419,5 +421,21 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
         )
 
         sendMessage(deviceToSend, messageWrapper)
+    }
+
+    fun deletePersistentGroups() {
+        try {
+            val methods: Array<Method> = WifiP2pManager::class.java.methods
+            for (i in methods.indices) {
+                if (methods[i].name.equals("deletePersistentGroup")) {
+                    // Delete any persistent group
+                    for (netId in 0..31) {
+                        methods[i].invoke(wiFiP2PInstance.wifiP2pManager, wiFiP2PInstance.channel, netId, null)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

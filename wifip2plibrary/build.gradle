@@ -44,6 +44,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
 
     implementation 'com.google.code.gson:gson:2.8.7'
+    // Need to use commons-io v2.4 to be able to support IOUtils.toString on older Android versions
     implementation 'commons-io:commons-io:2.4'
 
     testImplementation 'junit:junit:4.13.2'
