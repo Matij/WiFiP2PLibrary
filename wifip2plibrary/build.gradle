@@ -10,7 +10,7 @@ android {
         minSdk 24
         targetSdk 31
         versionCode 1
-        versionName "1.0.16"
+        versionName "1.0.17"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -54,7 +54,7 @@ dependencies {
 
 ext {
     PUBLISH_GROUP_ID = 'io.github.Matij'
-    PUBLISH_VERSION = '1.0.16'
+    PUBLISH_VERSION = '1.0.17'
     PUBLISH_ARTIFACT_ID = 'WiFiP2PLibrary'
 }
 
