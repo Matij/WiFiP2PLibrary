@@ -54,4 +54,28 @@ class WiFiP2PInstance private constructor(context: Context) : ConnectionInfoList
     fun onServerDeviceDisconnected() {
         serviceDisconnectedListener?.onServerDisconnectedListener()
     }
+
+    fun clear() {
+        wifiP2pManager?.cancelConnect(channel, object: WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d(TAG, "WiFiP2pManager.cancelConnect succeeded")
+            }
+
+            override fun onFailure(reason: Int) {
+                val error = WiFiP2PError.fromReason(reason)
+                Log.d(TAG, "WiFiP2pManager.cancelConnect failed with error: $error")
+            }
+        })
+        wifiP2pManager?.clearLocalServices(channel, object: WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d(TAG, "WiFiP2pManager.clearLocalServices succeeded")
+            }
+
+            override fun onFailure(reason: Int) {
+                val error = WiFiP2PError.fromReason(reason)
+                Log.d(TAG, "WiFiP2pManager.clearLocalServices failed with error: $error")
+            }
+        })
+        instance = null
+    }
 }

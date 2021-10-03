@@ -438,4 +438,9 @@ class WiFiGroupService private constructor(context: Context) : PeerConnectedList
             e.printStackTrace()
         }
     }
+
+    fun clear() {
+        wiFiP2PInstance.clear()
+        instance = null
+    }
 }

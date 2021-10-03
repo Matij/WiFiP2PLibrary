@@ -492,4 +492,9 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
             sendMessageToServer(disconnectionMessage)
         }
     }
+
+    fun clear() {
+        wiFiP2PInstance.clear()
+        instance = null
+    }
 }
