@@ -493,6 +493,10 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         }
     }
 
+    fun stopDiscovering() {
+        wiFiP2PInstance.stopPeerDiscovering()
+    }
+
     fun clear() {
         wiFiP2PInstance.clear()
         instance = null
