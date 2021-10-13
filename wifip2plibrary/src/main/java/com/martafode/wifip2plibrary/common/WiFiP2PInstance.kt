@@ -47,18 +47,6 @@ class WiFiP2PInstance private constructor(context: Context) : ConnectionInfoList
         })
     }
 
-    fun stopPeerDiscovering() {
-        wifiP2pManager?.stopPeerDiscovery(channel, object : WifiP2pManager.ActionListener {
-            override fun onSuccess() {
-                Log.i(TAG, "Peers discovering successfully stopped")
-            }
-
-            override fun onFailure(reason: Int) {
-                Log.e(TAG, "Error stopping peer disconvering. Reason: $reason")
-            }
-        })
-    }
-
     override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
         peerConnectedListener?.onPeerConnected(wifiP2pInfo = info)
     }
