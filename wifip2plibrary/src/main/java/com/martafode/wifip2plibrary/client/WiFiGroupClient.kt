@@ -6,13 +6,18 @@ import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
-import android.os.AsyncTask
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.coroutineScope
 import com.google.gson.Gson
-import com.martafode.wifip2plibrary.common.*
+import com.martafode.wifip2plibrary.common.executeAsyncTask
+import com.martafode.wifip2plibrary.common.WiFiGroupDevice
+import com.martafode.wifip2plibrary.common.WiFiGroupServiceDevice
+import com.martafode.wifip2plibrary.common.WiFiP2PError
+import com.martafode.wifip2plibrary.common.WiFiP2PInstance
 import com.martafode.wifip2plibrary.common.direct.WiFiDirectUtils
 import com.martafode.wifip2plibrary.common.listeners.ClientConnectedListener
 import com.martafode.wifip2plibrary.common.listeners.ClientDisconnectedListener
@@ -26,6 +31,7 @@ import com.martafode.wifip2plibrary.common.messages.MessageWrapper
 import com.martafode.wifip2plibrary.common.messages.RegisteredDevicesMessageContent
 import com.martafode.wifip2plibrary.common.messages.RegistrationMessageContent
 import com.martafode.wifip2plibrary.service.WiFiGroupService
+import kotlinx.coroutines.CoroutineScope
 import org.apache.commons.io.IOUtils
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -90,6 +96,8 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
      * @return the devices connected to the actual group.
      */
     var clientsConnected: HashMap<String, WiFiGroupDevice> = HashMap()
+
+    private val scope: CoroutineScope = ProcessLifecycleOwner.get().lifecycle.coroutineScope
 
     init {
         wiFiP2PInstance.peerConnectedListener = this
@@ -239,8 +247,9 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
         // Set the actual device to the message
         message.wifiGroupDevice = wiFiP2PInstance.thisDevice
 
-        class SendMessageAsyncTask : AsyncTask<MessageWrapper?, Void?, Void?>() {
-            override fun doInBackground(vararg params: MessageWrapper?): Void? {
+        scope.executeAsyncTask(
+            params = arrayOf(message),
+            doInBackground = { params ->
                 if (device?.deviceServerSocketIP != null) {
                     try {
                         val socket = Socket()
@@ -251,24 +260,22 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                         )
                         socket.connect(hostAddress, 2000)
                         val gson = Gson()
-                        val messageJson = gson.toJson(params[0])
+                        val messageJson = gson.toJson(params?.get(0))
                         val outputStream = socket.getOutputStream()
                         outputStream.write(
                             messageJson.toByteArray(),
                             0,
                             messageJson.toByteArray().size
                         )
-                        Log.d(TAG, "Sending data: " + params[0])
+                        Log.d(TAG, "Sending data: " + (params?.get(0)))
                         socket.close()
                         outputStream.close()
                     } catch (e: IOException) {
                         Log.e(TAG, "Error creating client socket: " + e.message)
                     }
                 }
-                return null
             }
-        }
-        SendMessageAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, message)
+        )
     }
 
     /**
@@ -346,8 +353,9 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
 
     private fun createServerSocket() {
         if (serverSocket == null) {
-            class CreateServerSocketAsyncTask : AsyncTask<Void?, Void?, Void?>() {
-                override fun doInBackground(vararg params: Void?): Void? {
+            scope.executeAsyncTask(
+                params = emptyArray<Unit>(),
+                doInBackground = {
                     try {
                         serverSocket = ServerSocket(0)
                         val port = serverSocket!!.localPort
@@ -384,11 +392,8 @@ class WiFiGroupClient private constructor(context: Context): PeerConnectedListen
                             "Error creating/closing client ServerSocket: " + e.message
                         )
                     }
-                    return null
                 }
-            }
-
-            CreateServerSocketAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            )
         }
     }
 
